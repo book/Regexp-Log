@@ -1,5 +1,9 @@
 Revision history for Perl extension Regexp::Log
 
+0.02  Wed Jan 21 12:39:34 CET 2004
+        - removed a useless /c in a s///
+        - small fix in a test
+
 0.01  Fri Jan 17 16:21:04 CET 2003
         - original version
         - this module is used as a base class for Regexp::Log::BlueCoat
