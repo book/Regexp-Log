@@ -232,6 +232,11 @@ sub regexp {
 
 This method return the list of all the fields that can be captured.
 
+For complex subclasses making a lot of modifications in _preprocess() and
+_postprocess(), the result may not be accurate.
+
+The result of fields() is therefore given for information only.
+
 =cut
 
 sub fields {
