@@ -10,3 +10,4 @@ t/20debug.t
 t/Foo.pm
 t/foo1.log
 t/foo2.log
+META.yml                                 Module meta-data (added by MakeMaker)
