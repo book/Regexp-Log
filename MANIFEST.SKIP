@@ -8,6 +8,7 @@ CVS/.*
 ^dist/
 ^tmp/
 ^blib/
+^html/
 ^Makefile$
 ^Makefile\.[a-z]+$
 ^pm_to_blib$
