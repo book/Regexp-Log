@@ -210,33 +210,31 @@ This section explains how to create subclasses of Regexp::Log.
 =head2 Package template
 
 To implement a Regexp::Log::Foo class, you need to create a package
-that defines the appropriate class variables, as in the following template:
+that defines the appropriate class variables, as in the following
+example (this is the complete code for Regexp::Log::Foo!):
 
     package Regexp::Log::Foo;
 
-    use strict;
     use base qw( Regexp::Log );
     use vars qw( $VERSION %DEFAULT %FORMAT %REGEXP );
 
     $VERSION = 0.01;
- 
+
     # default values
     %DEFAULT = (
-        format => '%d %c %b',
-        capture => [],
+        format  => '%d %c %b',
+        capture => [ 'c' ],
     );
 
     # predefined format strings
-    %FORMAT = (
-        ':default' => '%a %b %c',
-    );
-    
+    %FORMAT = ( ':default' => '%a %b %c', );
+
     # the regexps that match the various fields
     # this is the difficult part
     %REGEXP = (
         '%a' => '(?#a)\d+(?#!a)',
         '%b' => '(?#b)th(?:is|at)(?#!b)',
-        '%c' => '(?#c)(?#cs)\w+(?#!cs)/(?#cn)\d+(?#cn)(?#c)',
+        '%c' => '(?#c)(?#cs)\w+(?#!cs)/(?#cn)\d+(?#!cn)(?#!c)',
         '%d' => '(?#d)(?:foo|bar|baz)(?#!d)',
     );
 
@@ -258,6 +256,8 @@ that defines the appropriate class variables, as in the following template:
 
     # the _postprocess method is used to modify the format string
     # after the fields are expanded to their regexp value
+
+    1;
 
 =head2 Some explanations on the regexp format
 
@@ -297,6 +297,9 @@ Probably lots. Most of them should be in the derived classes, though.
 The first bug is that there are certainly much better ways to write
 this module and make it easy to create derived classes for any logging
 system.
+
+Another potential bug exists in the code that convert the format into
+a regex. I should use quotemeta() somewhere.
 
 =head1 AUTHOR
 
