@@ -85,7 +85,6 @@ sub new {
     }, $class;
 
     # some initialisation code
-    $self->_regexp;
     if ( my @capture = @{ $self->{capture} } ) {
         $self->{capture} = [];
         $self->capture(@capture);
@@ -104,10 +103,7 @@ line of the log-generating software.
 
 sub format {
     my $self = shift;
-    if (@_) {
-        $self->{format} = shift;
-        $self->_regexp;
-    }
+    $self->{format} = shift if @_;
     return $self->{format};
 }
 
@@ -162,6 +158,7 @@ sub capture {
     $self->{capture} = [ keys %capture ] if @_;
 
     # compute what will be actually captured, in which order
+    $self->_regexp;
     return grep { $capture{$_} } ( $self->{_regexp} =~ /\(\?\#=([-\w]+)\)/g );
 
 }
@@ -198,6 +195,7 @@ regex() is an alias for regexp().
 
 sub regexp {
     my $self   = shift;
+    $self->_regexp;
     my $regexp = $self->{_regexp};
 
     my %capture = map { ( $_, 1 ) } @{ $self->{capture} };
