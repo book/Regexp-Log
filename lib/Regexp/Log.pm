@@ -22,17 +22,18 @@ Regexp::Log - A regexp builder for munging log files
     $foo->capture(qw( host code ));
 
     # this is necessary to know in which order
-    # we will receive the captured fields from the regex
+    # we will receive the captured fields from the regexp
     my @fields = $foo->capture;
 
-    # the all-powerful capturing regex :-)
-    my $re = $foo->regex;
+    # the all-powerful capturing regexp :-)
+    my $re = $foo->regexp;
 
     while (<>) {
         my %data;
         @data{@fields} = /$re/;
 
-        # now do something with the fields
+        # now munge the fields
+        ...
     }
 
 =head1 DESCRIPTION
@@ -47,24 +48,21 @@ The following methods are available:
 
 =item new( %args )
 
-Return a new Regexp::Log::BlueCoat object. A list of key-value pairs can
-be given to the constructor.
+Return a new Regexp::Log object. A list of key-value pairs can be given
+to the constructor.
 
 The arguments are:
 
  format  - the format of the log line
- capture - the name of the fields to capture with the regex
+ capture - the name of the fields to capture with the regexp
            (given as an array ref)
 
 =cut
 
 sub new {
     my $class = shift;
-    return bless {
-        format  => '',
-        capture => [],
-        @_
-    }, $class;
+    no strict 'refs';
+    return bless { %{"${class}::DEFAULT"}, @_ }, $class;
 }
 
 =item format( $formatstring )
@@ -78,11 +76,9 @@ sub format {
     my $self   = shift;
     my $class  = ref $self;
     my $format = $self->{format};
-
-    if (@_) {
-        $self->{_regexp} = $self->{format} = shift;
-        no strict 'refs';
-        $self->{_regexp} =~ s/${"$class::CONVERT"}/${"$class::REGEXP"}{$1}/g;
+    if ( @_) { 
+        $self->{format} = shift;
+        $self->_regexp;
     }
     return $format;
 }
@@ -121,20 +117,41 @@ sub capture {
     for (@_) {
 
         # special tags
-        if ( $_ eq ':none' ) { $self->{capture} = {} }
+        if ( $_ eq ':none' ) { $self->{capture} = [] }
         elsif ( $_ eq ':all' ) {
             my @fields = ( $self->{_regexp} =~ /\(\?\#([-\w]+)\)/g );
-            @{ $self->{capture} }{@fields} = (1) x @fields;
+            $self->{capture} = [@fields];
         }
 
         # normal tags
-        else { $self->{capture}{$_} = 1 }
+        else { push @{ $self->{capture} }, $_ }
     }
 
-    # compute what will be actually captured, in which order
-    return
-      grep { $self->{capture}{$_} } ( $self->{_regexp} =~ /\(\?\#([-\w]+)\)/g );
+    my %capture = map { ( $_, 1 ) } @{ $self->{capture} };
+    $self->{capture} = [ keys %capture ] if @_;
 
+    # compute what will be actually captured, in which order
+    return grep { $capture{$_} } ( $self->{_regexp} =~ /\(\?\#([-\w]+)\)/g );
+
+}
+
+# this internal method actually computes the correct regular expression
+sub _regexp {
+    my $self = shift;
+    my $class = ref $self;
+
+    $self->{_regexp} = $self->{format};
+    $self->_preprocess if $self->can('_preprocess');
+
+    # accept predefined formats
+    no strict 'refs';
+    $self->{format} = ${"${class}::FORMAT"}{ $self->{format} }
+      if exists ${"${class}::FORMAT"}{ $self->{format} };
+
+    my $convert = join '|', reverse sort keys %{"${class}::REGEXP"};
+    $self->{_regexp} =~ s/($convert)/${"${class}::REGEXP"}{$1}/ge;
+
+    $self->_postprocess if $self->can('_postprocess');
 }
 
 =item regexp
@@ -146,22 +163,114 @@ regex() is an alias for regexp().
 =cut
 
 sub regexp {
-    my $self = shift;
+    my $self   = shift;
+    $self->_regexp unless defined $self->{_regexp};
+
     my $regexp = $self->{_regexp};
-    $regexp =~ s{\(\?\#(-[\w]+\)(.*?)\(\?\#!\1)}
-                {$self->{capture}{$_} ? "($2)" : $2 }eg;
-    return $regexp;
+
+    my %capture = map { ( $_, 1 ) } @{ $self->{capture} };
+
+    $regexp =~ s{\(\?\#([-\w]+)\)(.*?)\(\?\#!\1\)}
+                { exists $capture{$1} ? "($2)" : "(?:$2)" }eg;
+    return qr/$regexp/;
 }
 
 *regex = \&regexp;
 
-=head1 TODO
+=head1 SUBCLASSES
 
-Make it easy to create derived classes for any logging system.
+This section explains how to create subclasses of Regexp::Log.
+
+=head2 Package template
+
+To implement a Regexp::Log::Foo class, you need to create a package
+that defines the appropriate class variables, as in the following template:
+
+    package Regexp::Log::Foo;
+
+    use strict;
+    use base qw( Regexp::Log );
+    use vars qw( $VERSION %DEFAULT %FORMAT %REGEXP );
+
+    $VERSION = 0.01;
+ 
+    # default values
+    %DEFAULT = (
+        format => '%d %c %b',
+        capture => [],
+    );
+
+    # predefined format strings
+    %FORMAT = (
+        ':default' => '%a %b %c',
+    );
+    
+    # the regexps that match the various fields
+    # this is the difficult part
+    %REGEXP = (
+        '%a' => '(?#a)\d+(?#!a)',
+        '%b' => '(?#b)th(?:is|at)(?#!b)',
+        '%c' => '(?#c)(?#cs)\w+(?#!cs)/(?#cn)\d+(?#cn)(?#c)',
+        '%d' => '(?#d)(?:foo|bar|baz)(?#!d)',
+    );
+
+    # Note that the three hashes (%DEFAULT, %FORMAT and %REGEXP)
+    # MUST be defined, even if they are empty.
+
+    # the _regexp field is an internal field used as a template
+    # by the regexp()
+
+    # the _preprocess method is used to modify the format string
+    # before the fields are expanded to their regexp value
+    sub _preprocess {
+        my $self = shift;
+
+        # multiple consecutive spaces in the format are compressed
+        # to a single space
+        $self->{_regexp} =~ s/ +/ /g;
+    }
+
+    # the _postprocess method is used to modify the format string
+    # after the fields are expanded to their regexp value
+
+=head2 Some explanations on the regexp format
+
+You may have noticed the presence of C<(?#...)> regexp comments in the
+previous example. These are used by Regexp::Log to identify parts of
+the log line and capture them.
+
+These comments work just like HTML tags: C<(?#bar)> marks the beginning
+of field I<bar>, and C<(?#!bar)> marks the end.
+
+You'll also notice that C<%c> is subdivided in two subfields: C<cs> and
+C<cn>, which have their own tags.
+
+Consider the following example script:
+
+    my $log = Regexp::Log::Foo->new(
+        format => ':default',
+        capture => [ qw( c cn ) ],
+    );
+    my $re = $log->regexp;
+    my @fields = $log->capture();
+
+    while(<>) {
+        my @data;
+        @data{@fields} = (/$re/g);
+
+        # some more code
+    }
+
+The %data hash will have two keys: C<c> and C<cn>, even though C<c> holds
+the information in C<cn>. This gives log mungers a lot of flexibility in
+what they can get from their log lines.
 
 =head1 BUGS
 
 Probably lots. Most of them should be in the derived classes, though.
+The first bug is that there are certainly much better ways to write
+this module and make it easy to create derived classes for any logging
+system.
 
 =head1 AUTHOR
 
