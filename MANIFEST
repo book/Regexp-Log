@@ -4,3 +4,6 @@ Makefile.PL
 README
 lib/Regexp/Log.pm
 t/00basic.t
+t/10foo.t
+t/Foo.pm
+t/foo.log
