@@ -30,7 +30,7 @@ Regexp::Log - A base class for log files regexp builders
 
     while (<>) {
         my %data;
-        @data{@fields} = /$re/g;    # no need for /o, it's a compiled regexp
+        @data{@fields} = /$re/;    # no need for /o, it's a compiled regexp
 
         # now munge the fields
         ...
