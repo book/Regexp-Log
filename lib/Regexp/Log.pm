@@ -30,7 +30,7 @@ Regexp::Log - A base class for log files regexp builders
 
     while (<>) {
         my %data;
-        @data{@fields} = /$re/;
+        @data{@fields} = /$re/g;    # no need for /o, it's a compiled regexp
 
         # now munge the fields
         ...
@@ -39,10 +39,14 @@ Regexp::Log - A base class for log files regexp builders
 =head1 DESCRIPTION
 
 Regexp::Log is a base class for a variety of modules that generate
-regular expressions for you daily data munging tasks.
+regular expressions for performing the usual data munging tasks on
+log format that cannot be simply split().
 
-There is I<nothing useful> you can do with this module! Use one of its
-derived classes!
+The goal of this module family is to compute regular expressions
+based on the configuration string of the log.
+
+Please note that there is I<nothing useful> you can do with Regexp::Log!
+Use one of its derived classes!
 
 =head1 METHODS
 
@@ -58,9 +62,10 @@ to the constructor.
 
 The default arguments are:
 
- format  - the format of the log line
- capture - the name of the fields to capture with the regexp
-           (given as an array ref)
+ format   - the format of the log line
+ capture  - the name of the fields to capture with the regexp
+            (given as an array ref)
+ comments - leave the C<(?#name)> ... C<(?#!name)> comments in the regexp
 
 Other arguments can be defined in derived classes.
 
@@ -69,7 +74,7 @@ Other arguments can be defined in derived classes.
 sub new {
     my $class = shift;
     no strict 'refs';
-    my $self = bless { %{"${class}::DEFAULT"}, @_ }, $class;
+    my $self = bless { comments => 0, %{"${class}::DEFAULT"}, @_ }, $class;
 
     # some initialisation code
     $self->_regexp;
@@ -83,9 +88,9 @@ sub new {
 
 =item format( $formatstring )
 
-This accessor sets or gets the formatstring used to generate the
-log-matching regexp. This is usually the configuration line of
-the log-generating software.
+This accessor sets or gets the format string used as a template
+to generate the log-matching regexp. This is usually the configuration
+line of the log-generating software.
 
 =cut
 
@@ -105,8 +110,8 @@ sub format {
 Add the elements of @fields to the list of fields that the regular
 expression should capture (if possible).
 
-The method returns the list of actually  captured fields, B<in the same
-order as the regular expression capture> in list context.
+The method returns the list of actually captured fields, B<in the same
+order as the regular expression captures in list context>.
 
 The special tags C<:none> and C<:all> can be used to capture none or all
 of the fields. C<:none> can be used to reset a capture list, as shown
@@ -171,9 +176,10 @@ sub _regexp {
     $self->_postprocess if $self->can('_postprocess');
 }
 
-=item regexp()
+=item regexp( )
 
-Return the computed regular expression, ready to use in a script.
+Return a computed regular expression, computed from the data given to 
+the Regexp::Log object, and ready to be used in a script.
 
 regex() is an alias for regexp().
 
@@ -185,15 +191,22 @@ sub regexp {
 
     my %capture = map { ( $_, 1 ) } @{ $self->{capture} };
 
-    $regexp =~ s{\(\?\#([-\w]+)\)(.*?)\(\?\#!\1\)}
+    if ( $self->comments ) {
+        $regexp =~ s{\(\?\#([-\w]+)\)(.*?)\(\?\#!\1\)}
                 { exists $capture{$1} ? "((?#$1)$2(?#!$1))"
                                       : "(?:(?#$1)$2(?#!$1))" }egx;
+    }
+    else {
+        $regexp =~ s{\(\?\#([-\w]+)\)(.*?)\(\?\#!\1\)}
+                { exists $capture{$1} ? "($2)"
+                                      : "(?:$2)" }egx;
+    }
     return qr/^$regexp$/;
 }
 
 *regex = \&regexp;
 
-=item fields()
+=item fields( )
 
 This method return the list of all the fields that can be captured.
 
@@ -204,6 +217,20 @@ sub fields {
     my $class = ref $self;
     no strict 'refs';
     return map { (/\(\?\#([-\w]+)\)/g) } values %{"${class}::REGEXP"};
+}
+
+=item comments( $bool )
+
+Accessor for the C<comments> attribute.
+(Return the previous value when used to set.)
+
+=cut
+
+sub comments {
+    my $self = shift;
+    my $old  = $self->{$elem};
+    $self->{comments} = shift if @_;
+    return $old;
 }
 
 =back
