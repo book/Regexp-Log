@@ -35,7 +35,7 @@ open STDERR, ">&OLDERR"
   or die "fatal: could not duplicate STDERR: $!";
 close(OLDERR);
 
-@ARGV = ( "t/.test.$$" );
+@ARGV = ( $file );
 ok( <> eq "\n", "First line is empty" );
 ok( <> eq "a b cs cn c d \n", "Debug for a match" );
 ok( <> eq "a b cs cn c d \n", "Debug for a match" );
