@@ -17,10 +17,10 @@ $VERSION = 0.01;
 # the regexps that match the various fields
 # this is the difficult part
 %REGEXP = (
-    '%a' => '(?#a)\d+(?#!a)',
-    '%b' => '(?#b)th(?:is|at)(?#!b)',
-    '%c' => '(?#c)(?#cs)\w+(?#!cs)/(?#cn)\d+(?#!cn)(?#!c)',
-    '%d' => '(?#d)(?:foo|bar|baz)(?#!d)',
+    '%a' => '(?#=a)\\d+(?#!a)',
+    '%b' => '(?#=b)th(?:is|at)(?#!b)',
+    '%c' => '(?#=c)(?#=cs)\\w+(?#!cs)/(?#=cn)\\d+(?#!cn)(?#!c)',
+    '%d' => '(?#=d)(?:foo|bar|baz)(?#!d)',
 );
 
 sub _preprocess {
