@@ -77,7 +77,12 @@ classes.
 sub new {
     my $class = shift;
     no strict 'refs';
-    my $self = bless { comments => 0, %{"${class}::DEFAULT"}, @_ }, $class;
+    my $self = bless {
+        debug    => 0,
+        comments => 0,
+        %{"${class}::DEFAULT"},
+        @_
+    }, $class;
 
     # some initialisation code
     $self->_regexp;
@@ -207,6 +212,14 @@ sub regexp {
         $pos += 4;
     }
 
+    # for regexp debugging
+    if ( $self->debug ) {
+        $self->{_regexp} =~
+          s/\(\?\#\!([-\w]+)\)/(?#!$1)(?{ print STDERR "$1 "})/g;
+        $self->{_regexp} =~ s/^/(?{ print STDERR "\n"})/;
+    }
+
+    # remove comments
     $regexp =~ s{\(\?\#[=!][^)]*\)}{}g unless $self->comments;
 
     return qr/^$regexp$/;
@@ -239,6 +252,34 @@ sub comments {
     my $self = shift;
     $self->{comments} = shift if @_;
     return $self->{comments};
+}
+
+=item debug( $bool );
+
+Get/set regexp debug mode.
+
+If you plan to use this, you need to add the following line to your
+scripts:
+
+    use re 'eval';
+
+This is due to the fact that the debugging code make intensive use of
+the C<(?{ ... })> construct, which only runs with C<re 'eval'>.
+
+If C<debug> is set, each time a field (or subfield) is matched, its name
+(followed by a space) is printed on STDERR. A newline is printed at the
+beginning of the search. This lets you see where the regexp backtracks,
+and watch all its attempts to match something. Useful but usually I<very>
+verbose.
+
+This is mainly useful when writing a new Regexp::Log subclass.
+
+=cut
+
+sub debug {
+    my $self = shift;
+    $self->{debug} = shift if @_;
+    return $self->{debug};
 }
 
 =back
