@@ -1,5 +1,8 @@
 Revision history for Perl extension Regexp::Log
 
+0.03 Mon Mar 28 02:20:56 CEST 2005
+        - added t/pod.t and t/pod-coverage.t (for Kwalitee)
+
 0.02  Wed Jan 21 12:39:34 CET 2004
         - removed a useless /c in a s///
         - small fix in a test
