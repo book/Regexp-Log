@@ -13,12 +13,12 @@ Regexp::Log - A base class for log files regexp builders
 =head1 SYNOPSIS
 
     my $foo = Regexp::Log::Foo->new(
-        format  => 'custom %g %e %a %w/%s %b %m %i %u %H/%d %c',
+        format  => 'custom %a %b %c/%d',
         capture => [qw( host code )],
     );
 
     # the format() and capture() methods can be used to set or get
-    $foo->format('custom %g %e %a %w/%s %b %m %i %u %H/%d %c');
+    $foo->format('custom %g %e %a %w/%s %c');
     $foo->capture(qw( host code ));
 
     # this is necessary to know in which order
@@ -40,7 +40,7 @@ Regexp::Log - A base class for log files regexp builders
 
 Regexp::Log is a base class for a variety of modules that generate
 regular expressions for performing the usual data munging tasks on
-log format that cannot be simply split().
+log files that cannot be simply split().
 
 The goal of this module family is to compute regular expressions
 based on the configuration string of the log.
@@ -58,7 +58,7 @@ derived classes:
 =item new( %args )
 
 Return a new Regexp::Log object. A list of key-value pairs can be given
-to the constructor.
+to initialise the object.
 
 The default arguments are:
 
@@ -67,7 +67,8 @@ The default arguments are:
             (given as an array ref)
  comments - leave the C<(?#=name)> ... C<(?#!name)> comments in the regexp
 
-Other arguments can be defined in derived classes.
+Other arguments (and the corresponding accessors) can be defined in derived
+classes.
 
 =cut
 
@@ -96,7 +97,6 @@ line of the log-generating software.
 
 sub format {
     my $self   = shift;
-    my $class  = ref $self;
     my $format = $self->{format};
     if (@_) {
         $self->{format} = shift;
@@ -132,7 +132,7 @@ in the following example:
     my $re3 = $log->regexp;    # captures username and uri
 
 When used to set, this method returns the I<new> list of captured fields
-(contrary to the other accessors).
+(contrary to the other accessors, that return the old value).
 
 =cut
 
@@ -242,7 +242,7 @@ sub comments {
 
 =head1 SUBCLASSES
 
-This section explains how to create subclasses of Regexp::Log.
+This section explains how to create new subclasses of Regexp::Log.
 
 =head2 Package template
 
@@ -296,11 +296,15 @@ example (this is the complete code for Regexp::Log::Foo!):
 
     1;
 
+Please note that the _preprocess() and _postprocess() method should
+only modify the C<_regexp> attribute.
+
 =head2 Some explanations on the regexp format
 
 You may have noticed the presence of C<(?#...)> regexp comments in the
-previous example. These are used by Regexp::Log to identify parts of
-the log line and capture them.
+previous example. These are used by Regexp::Log to identify the different
+parts of the log line and compute a regular expression that can capture
+them.
 
 These comments work just like HTML tags: C<(?#=bar)> marks the beginning
 of a field named I<bar>, and C<(?#!bar)> marks the end.
@@ -326,13 +330,14 @@ Consider the following example script:
 
 The %data hash will have two keys: C<c> and C<cn>, even though C<c> holds
 the information in C<cn>. This gives log mungers a lot of flexibility in
-what they can get from their log lines.
+what they can get from their log lines, with no added work. Lazyness is
+a virtue.
 
 =head2 Changing the subclasse default behaviour
 
-If a subclass that is available from CPAN is buggy, and you want to
-use only published modules, it's very easy to patch the module from
-within your scripts.
+If a subclass that is available from CPAN is buggy or incomplete, or
+does not exactly fit your log files, it's very easy to add to a
+Regexp::Log subclass from within your scripts.
 
 Imagine that the C<%d> element of our Regexp::Log::Foo module is
 incomplete, because it does not match the string C<fu> that appears
@@ -342,15 +347,16 @@ script by adding the following line:
 
     $Regexp::Log::Foo::REGEXP{'%d'} = '(?#=d)(?:fu|foo|bar|baz)(?#!d)'
 
+That is to say, by replacing the C<%d> entry in the subclass' %REGEXP
+hash.
+
 =head1 BUGS
 
 Probably lots. Most of them should be in the derived classes, though.
+
 The first bug is that there are certainly much better ways to write
 this module and make it easy to create derived classes for any logging
 system.
-
-Another potential bug exists in the code that convert the format into
-a regex. I should use quotemeta() somewhere.
 
 =head1 AUTHOR
 
