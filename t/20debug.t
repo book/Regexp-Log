@@ -42,6 +42,7 @@ ok( <> eq "a b cs cn c d \n", "Debug for a match" );
 ok( <> eq "a b cs cn c d \n", "Debug for a match" );
 ok( <> eq "a a \n", "Debug for non-match" );
 ok( <> eq "a b cs cn c d ", "Debug for a match" );
+close ARGV;
 
 # cleanup files
-unlink $file or die "Could not remove $file: $!";
+unlink $file or diag "Could not remove $file: $!";
