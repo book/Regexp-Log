@@ -65,7 +65,16 @@ Other arguments can be defined in derived classes.
 sub new {
     my $class = shift;
     no strict 'refs';
-    return bless { %{"${class}::DEFAULT"}, @_ }, $class;
+    my $self = bless { %{"${class}::DEFAULT"}, @_ }, $class;
+
+    # some initialisation code
+    $self->_regexp;
+    if ( my @capture = @{ $self->{capture} } ) {
+        $self->{capture} = [];
+        $self->capture(@capture);
+    }
+
+    return $self;
 }
 
 =item format( $formatstring )
@@ -80,7 +89,7 @@ sub format {
     my $self   = shift;
     my $class  = ref $self;
     my $format = $self->{format};
-    if ( @_) { 
+    if (@_) {
         $self->{format} = shift;
         $self->_regexp;
     }
@@ -124,8 +133,7 @@ sub capture {
         # special tags
         if ( $_ eq ':none' ) { $self->{capture} = [] }
         elsif ( $_ eq ':all' ) {
-            my @fields = ( $self->{_regexp} =~ /\(\?\#([-\w]+)\)/g );
-            $self->{capture} = [@fields];
+            $self->{capture} = [ $self->fields ];
         }
 
         # normal tags
@@ -142,7 +150,7 @@ sub capture {
 
 # this internal method actually computes the correct regular expression
 sub _regexp {
-    my $self = shift;
+    my $self  = shift;
     my $class = ref $self;
 
     $self->{_regexp} = $self->{format};
@@ -169,8 +177,6 @@ regex() is an alias for regexp().
 
 sub regexp {
     my $self   = shift;
-    $self->_regexp unless defined $self->{_regexp};
-
     my $regexp = $self->{_regexp};
 
     my %capture = map { ( $_, 1 ) } @{ $self->{capture} };
@@ -189,7 +195,7 @@ This method return the list of all the fields that can be captured.
 =cut
 
 sub fields {
-    my $self = shift;
+    my $self  = shift;
     my $class = ref $self;
     no strict 'refs';
     return map { (/\(\?\#([-\w]+)\)/g) } values %{"${class}::REGEXP"};
