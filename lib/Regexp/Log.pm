@@ -374,10 +374,26 @@ already holds the information in C<cn>. This gives log mungers a lot
 of flexibility in what they can get from their log lines, with no added
 work. Lazyness is a virtue.
 
-B<Important note:> Since Regexp::Log handles all the capturing parentheses
+B<Important notes:>
+
+=over 4
+
+=item *
+
+Since Regexp::Log handles all the capturing parentheses
 by itself, there must not be any capturing parentheses in any regexp template
 of a derived class. If there are capturing parentheses in the values of
 %REGEXP, named captures I<will not work>.
+
+=item *
+
+All the regexp comments that let the Regexp::Log classes find the named
+captures must be stored in %REGEXP values. Even if you are using a
+complex process to create the final regexp (have a look at
+Regexp::Log::BlueCoat source code), you I<must> put the special regexp
+comments in %REGEXP.
+
+=back
 
 =head2 Changing the subclasse default behaviour
 
