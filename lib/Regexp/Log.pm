@@ -179,7 +179,7 @@ sub _regexp {
       if exists ${"${class}::FORMAT"}{ $self->{format} };
 
     my $convert = join '|', reverse sort keys %{"${class}::REGEXP"};
-    $self->{_regexp} =~ s/($convert)/${"${class}::REGEXP"}{$1}/ge;
+    $self->{_regexp} =~ s/($convert)/${"${class}::REGEXP"}{$1}/g;
 
     $self->_postprocess if $self->can('_postprocess');
 }
