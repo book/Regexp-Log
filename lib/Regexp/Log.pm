@@ -182,7 +182,8 @@ sub regexp {
     my %capture = map { ( $_, 1 ) } @{ $self->{capture} };
 
     $regexp =~ s{\(\?\#([-\w]+)\)(.*?)\(\?\#!\1\)}
-                { exists $capture{$1} ? "($2)" : "(?:$2)" }eg;
+                { exists $capture{$1} ? "((?#$1)$2(?#!$1))"
+                                      : "(?:(?#$1)$2(?#!$1))" }egx;
     use re 'eval';    # for (?{ croak "" }) error messages in subclasses
     return qr/^$regexp$/;
 }
