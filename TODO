@@ -1,0 +1,13 @@
+TODO
+----
+
+ * have a deep look at Regexp::Common
+
+ * Support "common" Regular Expressions for IP addresses, hostnames, etc.
+   Should we "export" them via use Regexp::Log qw( :common ); ? 
+
+ * a better fields() method, or a better way to work with fields added
+   by _preprocess() and _postprocess()
+
+ * add a concatenate() method that perform a join'|', @_, or
+   call presuf() if Regex::PreSuf is present
