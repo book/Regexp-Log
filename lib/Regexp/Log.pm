@@ -131,6 +131,9 @@ in the following example:
     $log->capture(qw( :none username uri ));
     my $re3 = $log->regexp;    # captures username and uri
 
+When used to set, this method returns the I<new> list of captured fields
+(contrary to the other accessors).
+
 =cut
 
 sub capture {
@@ -228,7 +231,7 @@ Accessor for the C<comments> attribute.
 
 sub comments {
     my $self = shift;
-    my $old  = $self->{$elem};
+    my $old  = $self->{comments};
     $self->{comments} = shift if @_;
     return $old;
 }
