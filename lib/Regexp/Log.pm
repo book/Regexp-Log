@@ -206,7 +206,7 @@ sub regexp {
         ( pos $regexp ) = $pos;
         $regexp =~ s{\G\(\?\#=([-\w]+)\)(.*?)\(\?\#\!\1\)}
                     { exists $capture{$1} ? "((?#=$1)$2(?#!$1))"
-                                          : "(?:(?#=$1)$2(?#!$1))" }exc;
+                                          : "(?:(?#=$1)$2(?#!$1))" }ex;
         $pos += 4;    # oh my! a magic constant!
     }
 
