@@ -38,7 +38,11 @@ Regexp::Log - A base class for log files regexp builders
 
 =head1 DESCRIPTION
 
-Regexp::Log is a base class for a variety of 
+Regexp::Log is a base class for a variety of modules that generate
+regular expressions for you daily data munging tasks.
+
+There is I<nothing useful> you can do with this module! Use one of its
+derived classes!
 
 =head1 METHODS
 
@@ -167,7 +171,7 @@ sub _regexp {
     $self->_postprocess if $self->can('_postprocess');
 }
 
-=item regexp
+=item regexp()
 
 Return the computed regular expression, ready to use in a script.
 
@@ -184,7 +188,6 @@ sub regexp {
     $regexp =~ s{\(\?\#([-\w]+)\)(.*?)\(\?\#!\1\)}
                 { exists $capture{$1} ? "((?#$1)$2(?#!$1))"
                                       : "(?:(?#$1)$2(?#!$1))" }egx;
-    use re 'eval';    # for (?{ croak "" }) error messages in subclasses
     return qr/^$regexp$/;
 }
 
@@ -292,6 +295,20 @@ Consider the following example script:
 The %data hash will have two keys: C<c> and C<cn>, even though C<c> holds
 the information in C<cn>. This gives log mungers a lot of flexibility in
 what they can get from their log lines.
+
+=head2 Changing the subclasse default behaviour
+
+If a subclass that is available from CPAN is buggy, and you want to
+use only published modules, it's very easy to patch the module from
+within your scripts.
+
+Imagine that the C<%d> element of our Regexp::Log::Foo module is
+incomplete, because it does not match the string C<fu> that appears
+occasionaly (maybe the Regexp::Log::Foo developper didn't know?).
+After emailing the patch to the author, you can temporarily fix your
+script by adding the following line:
+
+    $Regexp::Log::Foo::REGEXP{'%d'} = '(?#d)(?:fu|foo|bar|baz)(?#!d)'
 
 =head1 BUGS
 
