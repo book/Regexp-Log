@@ -65,7 +65,7 @@ The default arguments are:
  format   - the format of the log line
  capture  - the name of the fields to capture with the regexp
             (given as an array ref)
- comments - leave the C<(?#name)> ... C<(?#!name)> comments in the regexp
+ comments - leave the C<(?#=name)> ... C<(?#!name)> comments in the regexp
 
 Other arguments can be defined in derived classes.
 
@@ -156,7 +156,7 @@ sub capture {
     $self->{capture} = [ keys %capture ] if @_;
 
     # compute what will be actually captured, in which order
-    return grep { $capture{$_} } ( $self->{_regexp} =~ /\(\?\#([-\w]+)\)/g );
+    return grep { $capture{$_} } ( $self->{_regexp} =~ /\(\?\#=([-\w]+)\)/g );
 
 }
 
@@ -194,10 +194,17 @@ sub regexp {
 
     my %capture = map { ( $_, 1 ) } @{ $self->{capture} };
 
-    $regexp =~ s{\(\?\#([-\w]+)\)(.*?)\(\?\#!\1\)}
-                { exists $capture{$1} ? "((?#$1)$2(?#!$1))"
-                                      : "(?:(?#$1)$2(?#!$1))" }egx;
-    $regexp =~ s{\(\?\#[^)]*\)}{}g unless $self->comments;
+    # this is complicated, but handles multiple levels of imbrication
+    my $pos = 0;
+    while ( ( $pos = index( $regexp, "(?#=", $pos ) ) != -1 ) {
+        ( pos $regexp ) = $pos;
+        $regexp =~ s{\G\(\?\#=([-\w]+)\)(.*?)\(\?\#\!\1\)}
+                    { exists $capture{$1} ? "((?#=$1)$2(?#!$1))"
+                                          : "(?:(?#=$1)$2(?#!$1))" }exc;
+        $pos += 4;
+    }
+
+    $regexp =~ s{\(\?\#[=!][^)]*\)}{}g unless $self->comments;
 
     return qr/^$regexp$/;
 }
@@ -214,7 +221,7 @@ sub fields {
     my $self  = shift;
     my $class = ref $self;
     no strict 'refs';
-    return map { (/\(\?\#([-\w]+)\)/g) } values %{"${class}::REGEXP"};
+    return map { (/\(\?\#=([-\w]+)\)/g) } values %{"${class}::REGEXP"};
 }
 
 =item comments( $bool )
@@ -262,10 +269,10 @@ example (this is the complete code for Regexp::Log::Foo!):
     # the regexps that match the various fields
     # this is the difficult part
     %REGEXP = (
-        '%a' => '(?#a)\d+(?#!a)',
-        '%b' => '(?#b)th(?:is|at)(?#!b)',
-        '%c' => '(?#c)(?#cs)\w+(?#!cs)/(?#cn)\d+(?#!cn)(?#!c)',
-        '%d' => '(?#d)(?:foo|bar|baz)(?#!d)',
+        '%a' => '(?#=a)\d+(?#!a)',
+        '%b' => '(?#=b)th(?:is|at)(?#!b)',
+        '%c' => '(?#=c)(?#=cs)\w+(?#!cs)/(?#=cn)\d+(?#!cn)(?#!c)',
+        '%d' => '(?#=d)(?:foo|bar|baz)(?#!d)',
     );
 
     # Note that the three hashes (%DEFAULT, %FORMAT and %REGEXP)
@@ -295,8 +302,8 @@ You may have noticed the presence of C<(?#...)> regexp comments in the
 previous example. These are used by Regexp::Log to identify parts of
 the log line and capture them.
 
-These comments work just like HTML tags: C<(?#bar)> marks the beginning
-of field I<bar>, and C<(?#!bar)> marks the end.
+These comments work just like HTML tags: C<(?#=bar)> marks the beginning
+of a field named I<bar>, and C<(?#!bar)> marks the end.
 
 You'll also notice that C<%c> is subdivided in two subfields: C<cs> and
 C<cn>, which have their own tags.
@@ -333,7 +340,7 @@ occasionaly (maybe the Regexp::Log::Foo developper didn't know?).
 After emailing the patch to the author, you can temporarily fix your
 script by adding the following line:
 
-    $Regexp::Log::Foo::REGEXP{'%d'} = '(?#d)(?:fu|foo|bar|baz)(?#!d)'
+    $Regexp::Log::Foo::REGEXP{'%d'} = '(?#=d)(?:fu|foo|bar|baz)(?#!d)'
 
 =head1 BUGS
 
