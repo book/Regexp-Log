@@ -194,16 +194,11 @@ sub regexp {
 
     my %capture = map { ( $_, 1 ) } @{ $self->{capture} };
 
-    if ( $self->comments ) {
-        $regexp =~ s{\(\?\#([-\w]+)\)(.*?)\(\?\#!\1\)}
+    $regexp =~ s{\(\?\#([-\w]+)\)(.*?)\(\?\#!\1\)}
                 { exists $capture{$1} ? "((?#$1)$2(?#!$1))"
                                       : "(?:(?#$1)$2(?#!$1))" }egx;
-    }
-    else {
-        $regexp =~ s{\(\?\#([-\w]+)\)(.*?)\(\?\#!\1\)}
-                { exists $capture{$1} ? "($2)"
-                                      : "(?:$2)" }egx;
-    }
+    $regexp =~ s{\(\?\#[^)]*\)}{}g unless $self->comments;
+
     return qr/^$regexp$/;
 }
 
