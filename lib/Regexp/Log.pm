@@ -8,7 +8,7 @@ $VERSION = 0.01;
 
 =head1 NAME
 
-Regexp::Log - A regexp builder for munging log files
+Regexp::Log - A base class for log files regexp builders
 
 =head1 SYNOPSIS
 
@@ -42,7 +42,8 @@ Regexp::Log is a base class for a variety of
 
 =head1 METHODS
 
-The following methods are available:
+The following methods are available, and form the general API for the
+derived classes:
 
 =over 4
 
@@ -68,7 +69,8 @@ sub new {
 =item format( $formatstring )
 
 This accessor sets or gets the formatstring used to generate the
-log-matching regexp.
+log-matching regexp. This is usually the configuration line of
+the log-generating software.
 
 =cut
 
@@ -91,8 +93,9 @@ expression should capture (if possible).
 The method returns the list of actually  captured fields, B<in the same
 order as the regular expression capture> in list context.
 
-The special tags C<:none> and C<:all> can be used to capture none or
-all of the fields. C<:none> can be used to reset a capture list, as shown in the following example:
+The special tags C<:none> and C<:all> can be used to capture none or all
+of the fields. C<:none> can be used to reset a capture list, as shown
+in the following example:
 
     my $log = Regexp::Log::Foo->new( format => $format );
 
@@ -156,7 +159,7 @@ sub _regexp {
 
 =item regexp
 
-Return the computed regular expression, read to use.
+Return the computed regular expression, ready to use in a script.
 
 regex() is an alias for regexp().
 
