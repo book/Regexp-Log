@@ -36,12 +36,12 @@ open STDERR, ">&OLDERR"
 close(OLDERR);
 
 @ARGV = ( $file );
-ok( <> eq "\n", "First line is empty" );
-ok( <> eq "a b cs cn c d \n", "Debug for a match" );
-ok( <> eq "a b cs cn c d \n", "Debug for a match" );
-ok( <> eq "a b cs cn c d \n", "Debug for a match" );
-ok( <> eq "a a \n", "Debug for non-match" );
-ok( <> eq "a b cs cn c d ", "Debug for a match" );
+is( <>, "\n", "First line is empty" );
+is( <>, "a b cs cn c d \n", "Debug for a match" );
+is( <>, "a b cs cn c d \n", "Debug for a match" );
+is( <>, "a b cs cn c d \n", "Debug for a match" );
+is( <>, "a \n", "Debug for non-match" );
+is( <>, "a b cs cn c d ", "Debug for a match" );
 close ARGV;
 
 # cleanup files
