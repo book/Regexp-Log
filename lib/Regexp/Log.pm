@@ -166,6 +166,8 @@ sub _regexp {
     my $class = ref $self;
 
     $self->{_regexp} = $self->{format};
+
+    $self->{_regexp} =~ s/([\\|()\[\]{}^\$*+?.])/\\$1/g;
     $self->_preprocess if $self->can('_preprocess');
 
     # accept predefined formats
