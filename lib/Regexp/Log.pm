@@ -183,7 +183,8 @@ sub regexp {
 
     $regexp =~ s{\(\?\#([-\w]+)\)(.*?)\(\?\#!\1\)}
                 { exists $capture{$1} ? "($2)" : "(?:$2)" }eg;
-    return qr/$regexp/;
+    use re 'eval';    # for (?{ croak "" }) error messages in subclasses
+    return qr/^$regexp$/;
 }
 
 *regex = \&regexp;
