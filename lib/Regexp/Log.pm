@@ -374,6 +374,11 @@ already holds the information in C<cn>. This gives log mungers a lot
 of flexibility in what they can get from their log lines, with no added
 work. Lazyness is a virtue.
 
+B<Important note:> Since Regexp::Log handles all the capturing parentheses
+by itself, there must not be any capturing parentheses in any regexp template
+of a derived class. If there are capturing parentheses in the values of
+%REGEXP, named captures I<will not work>.
+
 =head2 Changing the subclasse default behaviour
 
 If a subclass that is available from CPAN is buggy or incomplete, or
