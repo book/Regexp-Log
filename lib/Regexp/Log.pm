@@ -67,7 +67,7 @@ The default arguments are:
  format   - the format of the log line
  capture  - the name of the fields to capture with the regexp
             (given as an array ref)
- comments - leave the C<(?#=name)> ... C<(?#!name)> comments in the regexp
+ comments - leave the (?#=name) ... (?#!name) comments in the regexp
 
 Other arguments (and the corresponding accessors) can be defined in derived
 classes.
@@ -113,10 +113,10 @@ Add the elements of @fields to the list of fields that the regular
 expression should capture (if possible).
 
 The method returns the list of actually captured fields, B<in the same
-order as the regular expression captures in list context>.
+order as the regular expression captures>.
 
 The special tags C<:none> and C<:all> can be used to capture none or all
-of the fields. C<:none> can be used to reset a capture list, as shown
+of the fields. C<:none> can also be used to reset a capture list, as shown
 in the following example:
 
     my $log = Regexp::Log::Foo->new( format => $format );
@@ -189,7 +189,7 @@ sub _regexp {
 Return a computed regular expression, computed from the data given to 
 the Regexp::Log object, and ready to be used in a script.
 
-regex() is an alias for regexp().
+regex() is an alias for the regexp() method.
 
 =cut
 
@@ -337,8 +337,8 @@ example (this is the complete code for Regexp::Log::Foo!):
 Please note that the _preprocess() and _postprocess() method should
 only modify the C<_regexp> attribute.
 
-The comments are removed after _postprocess(), if C<comments> is set
-to a false value.
+The comments are removed after _postprocess() is run, if C<comments>
+is set to a false value.
 
 =head2 Some explanations on the regexp format
 
@@ -348,9 +348,9 @@ parts of the log line and compute a regular expression that can capture
 them.
 
 These comments work just like HTML tags: C<(?#=bar)> marks the beginning
-of a field named I<bar>, and C<(?#!bar)> marks the end.
+of a field named I<bar>, and C<(?#!bar)> marks the end of the field.
 
-You'll also notice that C<%c> is subdivided in two subfields: C<cs> and
+You'll also notice that C<%c> is split in two subfields: C<cs> and
 C<cn>, which have their own tags.
 
 Consider the following example script:
@@ -369,10 +369,10 @@ Consider the following example script:
         # some more code
     }
 
-The %data hash will have two keys: C<c> and C<cn>, even though C<c> holds
-the information in C<cn>. This gives log mungers a lot of flexibility in
-what they can get from their log lines, with no added work. Lazyness is
-a virtue.
+The %data hash will have two keys: C<c> and C<cn>, even though C<c>
+already holds the information in C<cn>. This gives log mungers a lot
+of flexibility in what they can get from their log lines, with no added
+work. Lazyness is a virtue.
 
 =head2 Changing the subclasse default behaviour
 
@@ -383,6 +383,8 @@ Regexp::Log subclass from within your scripts.
 Imagine that the C<%d> element of our Regexp::Log::Foo module is
 incomplete, because it does not match the string C<fu> that appears
 occasionaly (maybe the Regexp::Log::Foo developper didn't know?).
+Or that you patched the Foo software so that your own version creates
+non-standard log files.
 
 After emailing the patch to the author, you can temporarily fix your
 script by adding the following line:
