@@ -214,15 +214,18 @@ sub regexp {
 
     # for regexp debugging
     if ( $self->debug ) {
-        $self->{_regexp} =~
-          s/\(\?\#\!([-\w]+)\)/(?#!$1)(?{ print STDERR "$1 "})/g;
-        $self->{_regexp} =~ s/^/(?{ print STDERR "\n"})/;
+        $regexp =~ s/\(\?\#\!([-\w]+)\)/(?#!$1)(?{ print STDERR "$1 "})/g;
+        $regexp =~ s/^/(?{ print STDERR "\n"})/;
     }
 
     # remove comments
     $regexp =~ s{\(\?\#[=!][^)]*\)}{}g unless $self->comments;
 
-    return qr/^$regexp$/;
+    # compute the regexp
+    if ( $self->debug ) { use re 'eval'; $regexp = qr/^$regexp$/; }
+    else { $regexp = qr/^$regexp$/ }
+
+    return $regexp;
 }
 
 *regex = \&regexp;
@@ -257,14 +260,6 @@ sub comments {
 =item debug( $bool );
 
 Get/set regexp debug mode.
-
-If you plan to use this, you need to add the following line to your
-scripts:
-
-    use re 'eval';
-
-This is due to the fact that the debugging code make intensive use of
-the C<(?{ ... })> construct, which only runs with C<re 'eval'>.
 
 If C<debug> is set, each time a field (or subfield) is matched, its name
 (followed by a space) is printed on STDERR. A newline is printed at the
