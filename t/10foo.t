@@ -14,8 +14,8 @@ ok( $capture[0] eq 'c', "Default captured field" );
 ok( $foo->comments == 0, "Default comments" );
 
 # check the format method
-ok( $foo->format('%a %b %c') eq '%d %c %b', "Format old value" );
-ok( $foo->format eq '%a %b %c', "Format new value" );
+ok( $foo->format('%a %b %c') eq '%a %b %c', "Format return new value" );
+ok( $foo->format eq '%a %b %c', "new format value is set" );
 
 # check the fields method
 my @fields = sort $foo->fields;
@@ -43,13 +43,13 @@ for (qw( b c cn cs d)) {
 }
 
 # the comments method
-$foo->comments(1);
-ok( $foo->comments(0) == 1, "comments old value" );
-ok( $foo->comments == 0, "comments new value" );
+ok( $foo->comments(1) == 1, "comments old value" );
+ok( $foo->comments == 1, "comments new value" );
 
 # the regexp method
 ok( $foo->regex eq $foo->regexp, "regexp() is aliased to regex()" );
 
+$foo->comments(0);
 my $regexp = $foo->regexp;
 ok( $regexp !~ /\(\?\#.*?\)/, "No comment in regexp" );
 $foo->comments(1);

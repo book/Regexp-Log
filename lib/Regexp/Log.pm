@@ -51,7 +51,9 @@ Use one of its derived classes!
 =head1 METHODS
 
 The following methods are available, and form the general API for the
-derived classes:
+derived classes.
+
+Please note that all the accessors return the new value, if used to set.
 
 =over 4
 
@@ -97,12 +99,11 @@ line of the log-generating software.
 
 sub format {
     my $self   = shift;
-    my $format = $self->{format};
     if (@_) {
         $self->{format} = shift;
         $self->_regexp;
     }
-    return $format;
+    return $self->{format};
 }
 
 =item capture( @fields )
@@ -131,8 +132,8 @@ in the following example:
     $log->capture(qw( :none username uri ));
     my $re3 = $log->regexp;    # captures username and uri
 
-When used to set, this method returns the I<new> list of captured fields
-(contrary to the other accessors, that return the old value).
+When used to set, this method returns the I<new> list of captured fields,
+in capture order.
 
 =cut
 
@@ -229,15 +230,15 @@ sub fields {
 =item comments( $bool )
 
 Accessor for the C<comments> attribute.
-(Return the previous value when used to set.)
+
+Comments are removed by default.
 
 =cut
 
 sub comments {
     my $self = shift;
-    my $old  = $self->{comments};
     $self->{comments} = shift if @_;
-    return $old;
+    return $self->{comments};
 }
 
 =back
@@ -296,10 +297,14 @@ example (this is the complete code for Regexp::Log::Foo!):
     # the _postprocess method is used to modify the format string
     # after the fields are expanded to their regexp value
 
+
     1;
 
 Please note that the _preprocess() and _postprocess() method should
 only modify the C<_regexp> attribute.
+
+The comments are removed after _postprocess(), if C<comments> is set
+to a false value.
 
 =head2 Some explanations on the regexp format
 
@@ -344,6 +349,7 @@ Regexp::Log subclass from within your scripts.
 Imagine that the C<%d> element of our Regexp::Log::Foo module is
 incomplete, because it does not match the string C<fu> that appears
 occasionaly (maybe the Regexp::Log::Foo developper didn't know?).
+
 After emailing the patch to the author, you can temporarily fix your
 script by adding the following line:
 
@@ -354,11 +360,7 @@ hash.
 
 =head1 BUGS
 
-Probably lots. Most of them should be in the derived classes, though.
-
-The first bug is that there are certainly much better ways to write
-this module and make it easy to create derived classes for any logging
-system.
+Probably. Most of them should be in the derived classes, though.
 
 =head1 AUTHOR
 
