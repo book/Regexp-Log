@@ -103,7 +103,7 @@ line of the log-generating software.
 =cut
 
 sub format {
-    my $self   = shift;
+    my $self = shift;
     if (@_) {
         $self->{format} = shift;
         $self->_regexp;
@@ -209,7 +209,7 @@ sub regexp {
         $regexp =~ s{\G\(\?\#=([-\w]+)\)(.*?)\(\?\#\!\1\)}
                     { exists $capture{$1} ? "((?#=$1)$2(?#!$1))"
                                           : "(?:(?#=$1)$2(?#!$1))" }exc;
-        $pos += 4;
+        $pos += 4;    # oh my! a magic constant!
     }
 
     # for regexp debugging
