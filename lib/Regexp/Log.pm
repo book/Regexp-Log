@@ -52,11 +52,13 @@ derived classes:
 Return a new Regexp::Log object. A list of key-value pairs can be given
 to the constructor.
 
-The arguments are:
+The default arguments are:
 
  format  - the format of the log line
  capture - the name of the fields to capture with the regexp
            (given as an array ref)
+
+Other arguments can be defined in derived classes.
 
 =cut
 
@@ -179,6 +181,21 @@ sub regexp {
 }
 
 *regex = \&regexp;
+
+=item fields()
+
+This method return the list of all the fields that can be captured.
+
+=cut
+
+sub fields {
+    my $self = shift;
+    my $class = ref $self;
+    no strict 'refs';
+    return map { (/\(\?\#([-\w]+)\)/g) } values %{"${class}::REGEXP"};
+}
+
+=back
 
 =head1 SUBCLASSES
 
