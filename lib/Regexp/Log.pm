@@ -4,7 +4,7 @@ use strict;
 use Carp;
 use vars qw( $VERSION );
 
-$VERSION = 0.02;
+$VERSION = 0.03;
 
 =head1 NAME
 
@@ -189,6 +189,8 @@ sub _regexp {
 Return a computed regular expression, computed from the data given to 
 the Regexp::Log object, and ready to be used in a script.
 
+=item regex( )
+
 regex() is an alias for the regexp() method.
 
 =cut
@@ -336,7 +338,6 @@ example (this is the complete code for Regexp::Log::Foo!):
     # the _postprocess method is used to modify the format string
     # after the fields are expanded to their regexp value
 
-
     1;
 
 Please note that the _preprocess() and _postprocess() method should
@@ -423,6 +424,10 @@ hash.
 =head1 BUGS
 
 Probably. Most of them should be in the derived classes, though.
+
+The F<t/20debug.t> test file fails with Perl 5.6.0 and 5.6.1. I have
+no idea why, but it may be linked to the use of the C<(?{ ... })> regexp
+construct in the debugging code.
 
 =head1 AUTHOR
 
