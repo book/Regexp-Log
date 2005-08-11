@@ -9,6 +9,7 @@ $VERSION = 0.01;
 %DEFAULT = (
     format  => '%d %c %b',
     capture => [],
+    _test   => 13,
 );
 
 # predefined format strings
