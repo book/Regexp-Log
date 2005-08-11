@@ -1,6 +1,10 @@
+.lwpcookies
 Makefile
 blib
 dist
 mess
 pm_to_blib
 META.yml
+Build
+_build
+cover_db
