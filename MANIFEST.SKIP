@@ -8,10 +8,15 @@ CVS/.*
 ^dist/
 ^tmp/
 ^blib/
+^_build/
 ^html/
+^Build$
 ^Makefile$
 ^Makefile\.[a-z]+$
 ^pm_to_blib$
 \.SKIP$
 \.cvsignore$
 ~$
+^cover_db/
+^.lwpcookies$
+^TODO$
