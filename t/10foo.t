@@ -14,8 +14,14 @@ ok( $capture[0] eq 'c', "Default captured field" );
 ok( $foo->comments == 0, "Default comments" );
 
 # check the format method
+$foo = Regexp::Log::Foo->new();
 ok( $foo->format('%a %b %c') eq '%a %b %c', "Format return new value" );
 ok( $foo->format eq '%a %b %c', "new format value is set" );
+my $r = $foo->regexp;
+
+# check the format method with templates
+$foo = Regexp::Log::Foo->new( format => ':default' );
+is( $foo->regexp, $r, "Same regexp with ':default' and '%a %b %c'");
 
 # check the fields method
 my @fields = sort $foo->fields;
@@ -142,4 +148,4 @@ while (<>) {
     is_deeply( \%data, $data[ $i++ ], "foo2.log line " . ( $i + 1 ) );
 }
 
-BEGIN { plan tests => 35 }
+BEGIN { plan tests => 36 }
