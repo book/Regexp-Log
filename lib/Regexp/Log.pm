@@ -226,18 +226,18 @@ sub regexp {
     $regexp =~ s{\(\?\#[=!][^)]*\)}{}g unless $self->comments;
 
     # include anchors
-    $regexp = qq/\^$regexp\$/ unless $self->anchor_line;
+    $regexp = qq/\^$regexp\$/ if $self->anchor_line;
 
     # compute the regexp
     if ( $self->debug ) { 
       use re 'eval';
-      $regexp = length $self->modifiers
-    		? qr/(?$self->modifiers:$regexp)/
+      $regexp = length $self->{modifiers} 
+    		? qr/(?$self->{modifiers}:$regexp)/
 		: qr/$regexp/;
 
     } else {
-      $regexp = length $self->modifiers
-    		? qr/(?$self->modifiers:$regexp)/
+      $regexp = length $self->{modifiers}
+    		? qr/(?$self->{modifiers}:$regexp)/
 		: qr/$regexp/;
     }
 
