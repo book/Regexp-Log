@@ -4,7 +4,7 @@ use strict;
 use Carp;
 use vars qw( $VERSION );
 
-$VERSION = 0.04;
+$VERSION = 0.05;
 
 =head1 NAME
 
@@ -64,10 +64,12 @@ to initialise the object.
 
 The default arguments are:
 
- format   - the format of the log line
- capture  - the name of the fields to capture with the regexp
-            (given as an array ref)
- comments - leave the (?#=name) ... (?#!name) comments in the regexp
+ format      - the format of the log line
+ capture     - the name of the fields to capture with the regexp
+               (given as an array ref)
+ comments    - leave the (?#=name) ... (?#!name) comments in the regexp
+ anchor_line - include begin (^) and end ($) anchor in the regexp
+ modifiers   - include the modifiers into regexp
 
 Other arguments (and the corresponding accessors) can be defined in derived
 classes.
@@ -78,8 +80,10 @@ sub new {
     my $class = shift;
     no strict 'refs';
     my $self = bless {
-        debug    => 0,
-        comments => 0,
+        debug       => 0,
+        comments    => 0,
+	anchor_line => 1,
+	modifiers   => '',
         %{"${class}::DEFAULT"},
         @_
     }, $class;
@@ -221,9 +225,21 @@ sub regexp {
     # remove comments
     $regexp =~ s{\(\?\#[=!][^)]*\)}{}g unless $self->comments;
 
+    # include anchors
+    $regexp = qq/\^$regexp\$/ unless $self->anchor_line;
+
     # compute the regexp
-    if ( $self->debug ) { use re 'eval'; $regexp = qr/^$regexp$/; }
-    else { $regexp = qr/^$regexp$/ }
+    if ( $self->debug ) { 
+      use re 'eval';
+      $regexp = length $self->modifiers
+    		? qr/(?$self->modifiers:$regexp)/
+		: qr/$regexp/;
+
+    } else {
+      $regexp = length $self->modifiers
+    		? qr/(?$self->modifiers:$regexp)/
+		: qr/$regexp/;
+    }
 
     return $regexp;
 }
@@ -261,6 +277,36 @@ sub comments {
     $self->{comments} = shift if @_;
     return $self->{comments};
 }
+
+=item modifiers( $modifiers )
+
+Sets the modifiers that govern how the pattern behaves (for
+versions of Perl up to 5.9 or so, these are C<imsx>). By
+default no flags are enabled.
+
+=cut
+
+sub modifiers {
+    my $self = shift;
+    $self->{modifiers} = defined($_[0]) ? $_[0] : '';
+    return $self->{modifiers};
+}
+
+=item anchor_line( $bool )
+
+The resulting pattern will be have the C<^> and C<$>
+line boundary assertions at the beginning and end
+of the pattern, respectively, when the value is true. Set
+to 0 to disable.
+
+=cut
+
+sub anchor_line {
+    my $self  = shift;
+    $self->{anchor_line} = shift if @_;
+    return $self->{anchor_line};
+}
+
 
 =item debug( $bool );
 
