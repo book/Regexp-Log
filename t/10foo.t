@@ -12,6 +12,18 @@ my @capture = $foo->capture;
 ok( @capture == 1, "Default capture" );
 ok( $capture[0] eq 'c', "Default captured field" );
 ok( $foo->comments == 0, "Default comments" );
+ok( $foo->anchor_line ==  1, "Default anchor line");
+ok( $foo->modifiers eq '', "Default modifiers" );
+
+# check the anchor_line method
+$foo = Regexp::Log::Foo->new( format => '%a' );
+ok( $foo->regexp eq q/(?-xism:^(?:\d+)$)/, "Ok for default anchors" );
+ok( $foo->anchor_line(0) == 0, "Disabling anchors for line" );
+ok( $foo->regexp eq q/(?-xism:(?:\d+))/ , "Ok for desabled anchors" );
+
+# check modifiers
+ok( $foo->modifiers('sim') eq q/sim/, "Ok to set modifiers" );
+ok( $foo->regexp eq q/(?-xism:(?sim:(?:\d+)))/, "Modifiers configured" ); 
 
 # check the format method
 $foo = Regexp::Log::Foo->new();
@@ -148,4 +160,4 @@ while (<>) {
     is_deeply( \%data, $data[ $i++ ], "foo2.log line " . ( $i + 1 ) );
 }
 
-BEGIN { plan tests => 36 }
+BEGIN { plan tests => 43 }
