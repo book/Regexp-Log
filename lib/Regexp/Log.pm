@@ -106,20 +106,15 @@ sub regexp {
     $regexp =~ s{\(\?\#[=!][^)]*\)}{}g unless $self->comments;
 
     # include anchors
-    $regexp = qq/\^$regexp\$/ if $self->anchor_line;
+    $regexp = qq{\^$regexp\$} if $self->anchor_line;
+
+    # include modifiers
+    $regexp = join '', '(?', $self->modifiers, ":$regexp)"
+        if length $self->modifiers;
 
     # compute the regexp
-    if ( $self->debug ) {
-        use re 'eval';
-        $regexp = length $self->{modifiers}
-            ? qr/(?$self->{modifiers}:$regexp)/
-            : qr/$regexp/;
-    }
-    else {
-        $regexp = length $self->{modifiers}
-            ? qr/(?$self->{modifiers}:$regexp)/
-            : qr/$regexp/;
-    }
+    if ( $self->debug ) { use re 'eval'; $regexp = qr/$regexp/; }
+    else { $regexp = qr/$regexp/ }
 
     return $regexp;
 }
