@@ -12,8 +12,8 @@ sub new {
     my $self = bless {
         debug       => 0,
         comments    => 0,
-	anchor_line => 1,
-	modifiers   => '',
+        anchor_line => 1,
+        modifiers   => '',
         %{"${class}::DEFAULT"},
         @_
     }, $class;
@@ -109,16 +109,16 @@ sub regexp {
     $regexp = qq/\^$regexp\$/ if $self->anchor_line;
 
     # compute the regexp
-    if ( $self->debug ) { 
-      use re 'eval';
-      $regexp = length $self->{modifiers} 
-    		? qr/(?$self->{modifiers}:$regexp)/
-		: qr/$regexp/;
-
-    } else {
-      $regexp = length $self->{modifiers}
-    		? qr/(?$self->{modifiers}:$regexp)/
-		: qr/$regexp/;
+    if ( $self->debug ) {
+        use re 'eval';
+        $regexp = length $self->{modifiers}
+            ? qr/(?$self->{modifiers}:$regexp)/
+            : qr/$regexp/;
+    }
+    else {
+        $regexp = length $self->{modifiers}
+            ? qr/(?$self->{modifiers}:$regexp)/
+            : qr/$regexp/;
     }
 
     return $regexp;
