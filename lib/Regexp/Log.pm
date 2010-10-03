@@ -128,28 +128,13 @@ sub fields {
     return map { (/\(\?\#=([-\w]+)\)/g) } values %{"${class}::REGEXP"};
 }
 
-sub comments {
-    my $self = shift;
-    $self->{comments} = shift if @_;
-    return $self->{comments};
-}
-
-sub modifiers {
-    my $self = shift;
-    $self->{modifiers} = shift if @_;
-    return $self->{modifiers};
-}
-
-sub anchor_line {
-    my $self  = shift;
-    $self->{anchor_line} = shift if @_;
-    return $self->{anchor_line};
-}
-
-sub debug {
-    my $self = shift;
-    $self->{debug} = shift if @_;
-    return $self->{debug};
+for my $attr (qw( comments modifiers anchor_line debug )) {
+    no strict 'refs';
+    *$attr = sub {
+        my $self = shift;
+        $self->{$attr} = shift if @_;
+        return $self->{$attr};
+    };
 }
 
 1;
