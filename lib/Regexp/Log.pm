@@ -136,7 +136,7 @@ sub comments {
 
 sub modifiers {
     my $self = shift;
-    $self->{modifiers} = defined($_[0]) ? $_[0] : '';
+    $self->{modifiers} = shift if @_;
     return $self->{modifiers};
 }
 
