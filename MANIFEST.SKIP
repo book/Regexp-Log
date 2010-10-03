@@ -20,3 +20,4 @@ CVS/.*
 ^cover_db/
 ^.lwpcookies$
 ^TODO$
+^MYMETA.yml$
