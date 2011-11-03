@@ -17,13 +17,14 @@ ok( $foo->modifiers eq '', "Default modifiers" );
 
 # check the anchor_line method
 $foo = Regexp::Log::Foo->new( format => '%a' );
-ok( $foo->regexp eq q/(?-xism:^(?:\d+)$)/, "Ok for default anchors" );
+my $_xism = qr// =~ /^\(\?\^/ ? "^" : "-xism";
+ok( $foo->regexp eq qq/(?$_xism\:^(?:\\d+)\$)/, "Ok for default anchors" );
 ok( $foo->anchor_line(0) == 0, "Disabling anchors for line" );
-ok( $foo->regexp eq q/(?-xism:(?:\d+))/ , "Ok for desabled anchors" );
+ok( $foo->regexp eq qq/(?$_xism\:(?:\\d+))/ , "Ok for desabled anchors" );
 
 # check modifiers
 ok( $foo->modifiers('sim') eq q/sim/, "Ok to set modifiers" );
-ok( $foo->regexp eq q/(?-xism:(?sim:(?:\d+)))/, "Modifiers configured" ); 
+ok( $foo->regexp eq qq/(?$_xism\:(?sim:(?:\\d+)))/, "Modifiers configured" ); 
 
 # check the format method
 $foo = Regexp::Log::Foo->new();
