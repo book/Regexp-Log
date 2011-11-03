@@ -20,7 +20,7 @@ $foo = Regexp::Log::Foo->new( format => '%a' );
 my $_xism = qr// =~ /^\(\?\^/ ? "^" : "-xism";
 ok( $foo->regexp eq qq/(?$_xism\:^(?:\\d+)\$)/, "Ok for default anchors" );
 ok( $foo->anchor_line(0) == 0, "Disabling anchors for line" );
-ok( $foo->regexp eq qq/(?$_xism\:(?:\\d+))/ , "Ok for desabled anchors" );
+ok( $foo->regexp eq qq/(?$_xism\:(?:\\d+))/ , "Ok for disabled anchors" );
 
 # check modifiers
 ok( $foo->modifiers('sim') eq q/sim/, "Ok to set modifiers" );
