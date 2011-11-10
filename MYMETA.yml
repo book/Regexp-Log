@@ -14,9 +14,9 @@ name: Regexp-Log
 provides:
   Regexp::Log:
     file: lib/Regexp/Log.pm
-    version: 0.05
+    version: 0.06
 requires:
   Test::More: 0
 resources:
   license: http://dev.perl.org/licenses/
-version: 0.05
+version: 0.06

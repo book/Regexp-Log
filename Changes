@@ -1,5 +1,8 @@
 Revision history for Perl extension Regexp::Log
 
+0.06 Thu Nov 10 20:44:20 CET 2011
+        - Steffen Mueller fixed tests for compatibility with recent Perls
+
 0.05 Sun Oct  3 18:31:22 CEST 2010
         - new options added by Solli Moreira Honorio:
           + anchor_line: optionaly anchors the regexp with ^ and $
